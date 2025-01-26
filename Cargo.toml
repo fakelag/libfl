@@ -1,7 +1,12 @@
 [package]
 name = "libfl"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+authors = ["fakelag"]
+license = "MIT"
+build = "build.rs"
+links = "libfl"
+include = ["/src"]
 
 [dependencies]
 cty = "0.2.2"
