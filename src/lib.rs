@@ -68,68 +68,88 @@ impl Result32 {
 mod ffi {
     use super::Result32;
 
+    macro_rules! export_ff {
+        ($name:tt) => {
+            pub fn $name(
+                a: cty::c_float,
+                b: cty::c_float,
+                rm: cty::c_uint,
+                out: *mut Result32,
+            ) -> cty::c_void;
+        };
+    }
+
     extern "C" {
-        pub fn f32_div(
-            a: cty::c_float,
-            b: cty::c_float,
-            rm: cty::c_uint,
-            out: *mut Result32,
-        ) -> cty::c_void;
+        export_ff!(f32_add);
+        export_ff!(f32_div);
     }
 }
 
-pub fn f32_div(a: f32, b: f32, rm: RoundingMode) -> (f32, Exception) {
-    let mut result = Result32::new();
-    unsafe { ffi::f32_div(a, b, rm as cty::c_uint, &mut result) };
-    (result.value, Exception(result.exception))
+macro_rules! impl_ff {
+    ($name:tt) => {
+        pub fn $name(a: f32, b: f32, rm: RoundingMode) -> (f32, Exception) {
+            let mut result = Result32::new();
+            unsafe { ffi::$name(a, b, rm as cty::c_uint, &mut result) };
+            (result.value, Exception(result.exception))
+        }
+    };
 }
 
+impl_ff!(f32_add);
+impl_ff!(f32_div);
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+    fn test_f32_add() {
+        let (r_1, exc_1) = f32_add(1.0, 2.0, RoundingMode::ToNearest);
+        assert_eq!(r_1, 3.0f32);
+        assert!(exc_1.is_none());
+    }
+
+    #[test]
     fn test_f32_div() {
-        let (r_1, exc_1) = f32_div(10.0f32, 2.0f32, RoundingMode::ToNearest);
+        let (r_1, exc_1) = f32_div(10.0, 2.0, RoundingMode::ToNearest);
         assert_eq!(r_1, 5.0f32);
         assert!(exc_1.is_none());
     }
 
     #[test]
     fn test_f32_div_rm_tonearest() {
-        let (r_1, _) = f32_div(1f32, 2.1f32, RoundingMode::ToNearest);
-        assert_eq!(r_1, 0.4761905f32);
+        let (r_1, _) = f32_div(1.0, 2.1, RoundingMode::ToNearest);
+        assert_eq!(r_1, 0.4761905);
     }
 
     #[test]
     fn test_f32_div_rm_towardzero() {
-        let (r_1, _) = f32_div(1f32, 2.1f32, RoundingMode::TowardZero);
-        assert_eq!(r_1, 0.47619048f32);
+        let (r_1, _) = f32_div(1.0, 2.1, RoundingMode::TowardZero);
+        assert_eq!(r_1, 0.47619048);
     }
 
     #[test]
     fn test_f32_div_rm_upward() {
-        let (r_1, _) = f32_div(1f32, 2.1f32, RoundingMode::Upward);
-        assert_eq!(r_1, 0.4761905f32);
+        let (r_1, _) = f32_div(1.0, 2.1, RoundingMode::Upward);
+        assert_eq!(r_1, 0.4761905);
     }
 
     #[test]
     fn test_f32_div_rm_downward() {
-        let (r_1, _) = f32_div(1f32, 2.1f32, RoundingMode::Downward);
-        assert_eq!(r_1, 0.47619048f32);
+        let (r_1, _) = f32_div(1.0, 2.1, RoundingMode::Downward);
+        assert_eq!(r_1, 0.47619048);
     }
 
     #[test]
     fn test_f32_div_exc_inexact() {
-        let (r_1, exc_1) = f32_div(1f32, 2.1f32, RoundingMode::ToNearest);
-        assert_eq!(r_1, 0.4761905f32);
+        let (r_1, exc_1) = f32_div(1.0, 2.1, RoundingMode::ToNearest);
+        assert_eq!(r_1, 0.4761905);
         assert!(exc_1.only(ExceptionFlags::Inexact));
     }
 
     #[test]
     fn test_f32_div_exc_byzero() {
-        let (r_1, exc_1) = f32_div(1f32, 0.0f32, RoundingMode::ToNearest);
+        let (r_1, exc_1) = f32_div(1.0, 0.0, RoundingMode::ToNearest);
         assert_eq!(r_1.is_infinite(), true);
         assert!(exc_1.only(ExceptionFlags::DivByZero));
     }

@@ -52,15 +52,28 @@ void getexcept(uint32_t *out)
         *out |= EXINEXACT;
 }
 
+void f32_add(float a, float b, enum RoundingMode rm, struct Result32 *out)
+{
+    int curround = pushround(rm);
+    clearexcept();
+
+    float res = a + b;
+
+    getexcept(&out->exception);
+    popround(curround);
+
+    out->value = res;
+}
+
 void f32_div(float a, float b, enum RoundingMode rm, struct Result32 *out)
 {
     int curround = pushround(rm);
     clearexcept();
 
-    float c = a / b;
+    float res = a / b;
 
     getexcept(&out->exception);
     popround(curround);
 
-    out->value = c;
+    out->value = res;
 }
