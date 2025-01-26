@@ -1,5 +1,6 @@
 [package]
 name = "libfl"
+description = "Library for floating point operations that supports rounding modes and fpu exceptions"
 version = "0.0.1"
 edition = "2021"
 authors = ["fakelag"]
