@@ -1,7 +1,7 @@
 #include "libfl.h"
 #include <fenv.h>
 
-int pushround(enum RoundingMode rm)
+int pushroundexc(enum RoundingMode rm)
 {
     int curround = fegetround();
 
@@ -21,59 +21,55 @@ int pushround(enum RoundingMode rm)
         break;
     }
 
+    feclearexcept(FE_ALL_EXCEPT);
     return curround;
 }
 
-void popround(int curround)
-{
-    fesetround(curround);
-}
-
-void clearexcept()
-{
-    feclearexcept(FE_ALL_EXCEPT);
-}
-
-void getexcept(uint32_t *out)
+void poproundexc(int prevround, uint32_t *outexc)
 {
     int exception = fetestexcept(FE_ALL_EXCEPT);
 
-    *out = 0;
+    *outexc = 0;
 
     if (exception & FE_DIVBYZERO)
-        *out |= EXDIVBYZERO;
+        *outexc |= EXDIVBYZERO;
     if (exception & FE_INVALID)
-        *out |= EXINVALID;
+        *outexc |= EXINVALID;
     if (exception & FE_OVERFLOW)
-        *out |= EXOVERFLOW;
+        *outexc |= EXOVERFLOW;
     if (exception & FE_UNDERFLOW)
-        *out |= EXUNDERFLOW;
+        *outexc |= EXUNDERFLOW;
     if (exception & FE_INEXACT)
-        *out |= EXINEXACT;
+        *outexc |= EXINEXACT;
+
+    fesetround(prevround);
 }
 
-void f32_add(float a, float b, enum RoundingMode rm, struct Result32 *out)
+void add_f32(float a, float b, enum RoundingMode rm, struct Result32 *out)
 {
-    int curround = pushround(rm);
-    clearexcept();
+    int curround = pushroundexc(rm);
 
     float res = a + b;
 
-    getexcept(&out->exception);
-    popround(curround);
-
+    poproundexc(curround, &out->exception);
     out->value = res;
 }
 
-void f32_div(float a, float b, enum RoundingMode rm, struct Result32 *out)
+void div_f32(float a, float b, enum RoundingMode rm, struct Result32 *out)
 {
-    int curround = pushround(rm);
-    clearexcept();
+    int curround = pushroundexc(rm);
 
     float res = a / b;
 
-    getexcept(&out->exception);
-    popround(curround);
+    poproundexc(curround, &out->exception);
+    out->value = res;
+}
 
+void cvt_u32_f32(uint32_t val, enum RoundingMode rm, struct Result32 *out)
+{
+    int curround = pushroundexc(rm);
+    float res = (float)val;
+
+    poproundexc(curround, &out->exception);
     out->value = res;
 }

@@ -25,5 +25,6 @@ struct Result32
     uint32_t exception;
 } Result32;
 
-void f32_add(float a, float b, enum RoundingMode rm, struct Result32 *out);
-void f32_div(float a, float b, enum RoundingMode rm, struct Result32 *out);
+void add_f32(float a, float b, enum RoundingMode rm, struct Result32 *out);
+void div_f32(float a, float b, enum RoundingMode rm, struct Result32 *out);
+void cvt_u32_f32(uint32_t val, enum RoundingMode rm, struct Result32 *out);
