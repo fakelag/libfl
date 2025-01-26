@@ -5,8 +5,8 @@ edition = "2021"
 authors = ["fakelag"]
 license = "MIT"
 build = "build.rs"
-links = "fl"
-include = ["/src"]
+links = "libfl"
+include = ["/src", "build.rs"]
 
 [dependencies]
 cty = "0.2.2"
