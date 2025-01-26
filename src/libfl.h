@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 enum RoundingMode
 {
@@ -8,7 +9,7 @@ enum RoundingMode
     RMDOWNWARD = 3,
 } RoundingMode;
 
-enum Exception
+enum ExceptionFlags
 {
     EXNOEXCEPTION = 0,
     EXDIVBYZERO = 1 << 0,
@@ -16,12 +17,12 @@ enum Exception
     EXOVERFLOW = 1 << 2,
     EXUNDERFLOW = 1 << 3,
     EXINEXACT = 1 << 4,
-} Exception;
+} ExceptionFlags;
 
 struct Result32
 {
     float value;
-    enum Exception exception;
+    uint32_t exception;
 } Result32;
 
 void f32_div(float a, float b, enum RoundingMode rm, struct Result32 *out);

@@ -34,7 +34,7 @@ void clearexcept()
     feclearexcept(FE_ALL_EXCEPT);
 }
 
-void getexcept(enum Exception *out)
+void getexcept(uint32_t *out)
 {
     int exception = fetestexcept(FE_ALL_EXCEPT);
 
