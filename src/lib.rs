@@ -52,14 +52,14 @@ impl Exception {
 
 #[repr(C)]
 struct Result32 {
-    value: f32,
+    value: u32,
     exception: ExceptionType,
 }
 
 impl Result32 {
     fn new() -> Self {
         Self {
-            value: 0.0,
+            value: 0,
             exception: 0,
         }
     }
@@ -89,6 +89,7 @@ mod ffi {
         export_ff_binary!(add_f32);
         export_ff_binary!(div_f32);
         export_ff_unary!(cvt_u32_f32, cty::c_uint);
+        export_ff_unary!(cvt_f32_u32, cty::c_float);
     }
 }
 
@@ -96,25 +97,30 @@ macro_rules! impl_binary {
     ($name:tt) => {
         pub fn $name(a: f32, b: f32, rm: RoundingMode) -> (f32, Exception) {
             let mut result = Result32::new();
-            unsafe { ffi::$name(a, b, rm as cty::c_uint, &mut result) };
-            (result.value, Exception(result.exception))
+            unsafe {
+                ffi::$name(a, b, rm as cty::c_uint, &mut result);
+                (std::mem::transmute::<u32, f32>(result.value), Exception(result.exception))
+            }
         }
     };
 }
 
 macro_rules! impl_unary {
-    ($name:tt, $ty:ty) => {
-        pub fn $name(val: $ty, rm: RoundingMode) -> (f32, Exception) {
+    ($name:tt, $in_ty:ty, $out_ty:ty) => {
+        pub fn $name(val: $in_ty, rm: RoundingMode) -> ($out_ty, Exception) {
             let mut result = Result32::new();
-            unsafe { ffi::$name(val, rm as cty::c_uint, &mut result) };
-            (result.value, Exception(result.exception))
+            unsafe {
+                ffi::$name(val, rm as cty::c_uint, &mut result);
+                (std::mem::transmute::<u32, $out_ty>(result.value), Exception(result.exception))
+            }
         }
     };
 }
 
 impl_binary!(add_f32);
 impl_binary!(div_f32);
-impl_unary!(cvt_u32_f32, u32);
+impl_unary!(cvt_u32_f32, u32, f32);
+impl_unary!(cvt_f32_u32, f32, u32);
 
 #[cfg(test)]
 mod tests {
