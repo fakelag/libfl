@@ -185,10 +185,29 @@ mod tests {
     }
 
     #[test]
-    fn test_cvt_u32_f32_rounding() {
-        assert_eq!(cvt_u32_f32(10, RoundingMode::ToNearest).0, 10.0);
-        assert_eq!(cvt_u32_f32(10, RoundingMode::TowardZero).0, 10.0);
-        assert_eq!(cvt_u32_f32(10, RoundingMode::Upward).0, 10.0);
-        assert_eq!(cvt_u32_f32(10, RoundingMode::Downward).0, 10.0);
+    fn test_cvt_u32_f32_exc() {
+        let (_, exc) = cvt_u32_f32(u32::MAX, RoundingMode::ToNearest);
+        assert!(exc.has(ExceptionFlags::Inexact));
+    }
+
+    #[test]
+    fn test_cvt_f32_u32() {
+        let (r_1, exc_1) = cvt_f32_u32(6.0, RoundingMode::ToNearest);
+        assert_eq!(r_1, 6);
+        assert!(exc_1.is_none());
+    }
+
+    #[test]
+    fn test_cvt_f32_u32_rounding() {
+        assert_eq!(cvt_f32_u32(1.5, RoundingMode::ToNearest).0, 2);
+        assert_eq!(cvt_f32_u32(1.5, RoundingMode::TowardZero).0, 1);
+        assert_eq!(cvt_f32_u32(1.5, RoundingMode::Upward).0, 2);
+        assert_eq!(cvt_f32_u32(1.5, RoundingMode::Downward).0, 1);
+    }
+
+    #[test]
+    fn test_cvt_f32_u32_exc() {
+        let (_, exc) = cvt_f32_u32(f32::NAN, RoundingMode::ToNearest);
+        assert!(exc.has(ExceptionFlags::Invalid));
     }
 }
