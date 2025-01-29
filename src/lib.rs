@@ -88,6 +88,7 @@ mod ffi {
     extern "C" {
         export_ff_binary!(add_f32);
         export_ff_binary!(div_f32);
+        export_ff_binary!(mul_f32);
         export_ff_unary!(cvt_u32_f32, cty::c_uint);
         export_ff_unary!(cvt_f32_u32, cty::c_float);
     }
@@ -119,6 +120,7 @@ macro_rules! impl_unary {
 
 impl_binary!(add_f32);
 impl_binary!(div_f32);
+impl_binary!(mul_f32);
 impl_unary!(cvt_u32_f32, u32, f32);
 impl_unary!(cvt_f32_u32, f32, u32);
 
@@ -175,6 +177,33 @@ mod tests {
         let (r_1, exc_1) = div_f32(1.0, 0.0, RoundingMode::ToNearest);
         assert_eq!(r_1.is_infinite(), true);
         assert!(exc_1.only(ExceptionFlags::DivByZero));
+    }
+
+    #[test]
+    fn test_mul_f32() {
+        let (r_1, exc_1) = mul_f32(10.0, 2.0, RoundingMode::ToNearest);
+        assert_eq!(r_1, 20.0f32);
+        assert!(exc_1.is_none());
+    }
+
+    #[test]
+    fn test_mul_f32_rounding() {
+        assert_eq!(mul_f32(1.999999, 2.1, RoundingMode::ToNearest).0, 4.199998);
+        assert_eq!(mul_f32(1.999999, 2.1, RoundingMode::TowardZero).0, 4.1999974);
+        assert_eq!(mul_f32(1.999999, 2.1, RoundingMode::Upward).0, 4.199998);
+        assert_eq!(mul_f32(1.999999, 2.1, RoundingMode::Downward).0, 4.1999974);
+    }
+
+    #[test]
+    fn test_mul_f32_fpe() {
+        let (r_1, exc_1) = mul_f32(2.1, 2.1, RoundingMode::ToNearest);
+        assert_eq!(r_1, 4.4099994);
+        assert!(exc_1.only(ExceptionFlags::Inexact));
+
+        let (r_1, exc_1) = mul_f32(f32::MAX, 1.1, RoundingMode::ToNearest);
+        assert_eq!(r_1.is_infinite(), true);
+        println!("{:?}", exc_1.0);
+        assert!(exc_1.has(ExceptionFlags::Overflow));
     }
 
     #[test]

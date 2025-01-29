@@ -66,6 +66,16 @@ void div_f32(float a, float b, enum RoundingMode rm, struct Result32 *out)
     out->value.f = res;
 }
 
+void mul_f32(float a, float b, enum RoundingMode rm, struct Result32 *out)
+{
+    int curround = pushroundexc(rm);
+
+    float res = a * b;
+
+    poproundexc(curround, &out->exception);
+    out->value.f = res;
+}
+
 void cvt_u32_f32(uint32_t val, enum RoundingMode rm, struct Result32 *out)
 {
     int curround = pushroundexc(rm);

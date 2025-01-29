@@ -32,5 +32,6 @@ struct Result32
 
 void add_f32(float a, float b, enum RoundingMode rm, struct Result32 *out);
 void div_f32(float a, float b, enum RoundingMode rm, struct Result32 *out);
+void mul_f32(float a, float b, enum RoundingMode rm, struct Result32 *out);
 void cvt_u32_f32(uint32_t val, enum RoundingMode rm, struct Result32 *out);
 void cvt_f32_u32(float val, enum RoundingMode rm, struct Result32 *out);
