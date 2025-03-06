@@ -13,4 +13,4 @@ include = ["/src", "build.rs"]
 cty = "0.2.2"
 
 [build-dependencies]
-cc = "1.2.10"
+cc = "1.2.16"
